@@ -28,7 +28,6 @@ Router.get('/all', (req, res) => {
   const getAllReceipes = `SELECT * FROM receipe`;
   connection.query(getAllReceipes, (err, rows) => {
     if (!err) {
-      d;
       res.json(rows);
     }
   });
