@@ -31,50 +31,27 @@ Router.post('/generate', (req, res) => {
 });
 
 Router.post('/make', (req, res) => {
-  //   const { calorie } = req.body;
-  //break down of the diet
-  //   let protein = 0.3 * calorie;
-  //   let fruits = 0.2 * calorie;
-  //   let carbs = 0.2 * calorie;
-  //   let diary = 0.1 * calorie;
-  //   let veggies = 0.2 * calorie;
-
-  //   let breakfastCalorie = calorie / 3;
-
-  //   let lunchCalorie = calorie / 3;
-  //   let dinnerCalorie = calorie / 3;
-
-  connection.query(`select * from breakfast`, (err, rows) => {
+  // const { calories, allergy, disease } = req.body;
+  let data = [];
+  let finaldata = [];
+  let SQL_QUERY = `
+  select * from ingredients inner join (select r.receipe_name,r.receipe_type,r.receipe_steps,i.ingredient_id from receipe r inner join receipe_ingredients i on r.id = i.receipe_id
+    ) as result on ingredients.id = result.ingredient_id;
+  `;
+  connection.query(SQL_QUERY, (err, rows) => {
     if (err) throw err;
-
-    // function checkCalorie(item) {
-    //   return item.calories >= 100 && item.calories < 105;
-    // }
-    // const data = rows.filter(checkCalorie);
-    let datas = [10, 20, 5, 4, 8, 9, 100];
-    function twoValues(arr, k) {
-      arr.sort((a, b) => {
-        return a - b;
-});
-      res.send(arr);
-      let lowIndex = 0;
-      let highIndex = arr.length - 1;
-      let temp;
-
-      while (lowIndex < highIndex) {
-        temp = arr[lowIndex] + arr[highIndex];
-
-        if (temp === k) {
-          return [arr[lowIndex], arr[highIndex]];
-        } else if (temp < k) {
-          lowIndex++;
-        } else {
-          highIndex--;
-        }
-      }
-    }
-    let result = twoValues(datas, 30);
-    console.log(result);
+    connection.query('select * from receipe', (err, receipes) => {
+      receipes.forEach(receipe => {
+        data.push(
+          rows.filter(row => {
+            return row.receipe_name === receipe.receipe_name;
+          })
+        );
+      });
+      data.forEach(d => {
+        console.log(d);
+      });
+    });
   });
 });
 
