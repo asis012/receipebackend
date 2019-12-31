@@ -31,28 +31,59 @@ Router.post('/generate', (req, res) => {
 });
 
 Router.post('/make', (req, res) => {
-  // const { calories, allergy, disease } = req.body;
-  let data = [];
-  let finaldata = [];
-  let SQL_QUERY = `
-  select * from ingredients inner join (select r.receipe_name,r.receipe_type,r.receipe_steps,i.ingredient_id from receipe r inner join receipe_ingredients i on r.id = i.receipe_id
-    ) as result on ingredients.id = result.ingredient_id;
-  `;
-  connection.query(SQL_QUERY, (err, rows) => {
-    if (err) throw err;
-    connection.query('select * from receipe', (err, receipes) => {
-      receipes.forEach(receipe => {
-        data.push(
-          rows.filter(row => {
-            return row.receipe_name === receipe.receipe_name;
-          })
-        );
+   const {allergy} = req.body;
+   SQL_QUERY = `select * from receipe,ingredients,receipe_ingredients WHERE receipe.id=receipe_ingredients.receipe_id and 
+   ingredients.id = receipe_ingredients.ingredient_id
+   `;
+   connection.query(SQL_QUERY,(err,receipes)=>{
+     if(err) throw err;
+     const item = ['momoboi','oatmeal'];
+     let response = [];
+     let finalresponse = [];
+      item.forEach((i)=>{
+
+        let ingredients = [];
+        let single_item = receipes.filter((receipe)=>{
+          if(receipe.receipe_name === i ){
+            return 1;
+          }
+        })
+      //retreving all ingredients of a particular receipe
+      single_item.forEach((data)=>{
+        ingredients.push(data.ingredient_name);
+      })
+      //making a object with all receipes information 
+      response.push({
+        "receipe_name":i,
+        "receipe_ingredients":ingredients,
+        "receipe_steps":single_item[0].receipe_steps,
+        "receipe_type":single_item[0].receipe_type
+        
+      })
       });
-      data.forEach(d => {
-        console.log(d);
-      });
-    });
+      //filtering receipes if it contains the ingredients to which user is allergetic
+     finalresponse = response.filter((r)=>{
+      if(r.receipe_ingredients.some((i)=>{ return allergy.includes(i)})){
+        
+      }
+      else
+      {
+        return 1;
+      }
+     })
+     res.json({finalresponse});
+     
+   })
+
   });
-});
 
 module.exports = Router;
+
+
+// let datas = [{
+//   type:"breakfast",
+//   receipe_name:"oatmeal",
+//   receipe_ingredients:["oat","meal"],
+//   receipe_steps:["boil milk","add oat in it","keep it warm for 5 minutes","add sugar"],
+//   receipe_calorie:"600 kcal"
+// }]
